@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Bitcoin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #ff9800;
+            --background-color: #f5f6fa;
+            --card-background: #ffffff;
+            --text-color: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .dark-mode {
+            background-color: #1e1e1e;
+            color: #fff;
+        }
+
+        .dark-mode .card {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .dark-mode .price {
+            color: #ff9800;
+        }
+
+        .dark-mode .change.positive {
+            color: #28a745;
+        }
+
+        .dark-mode .change.negative {
+            color: #dc3545;
+        }
+
+        .dark-mode .sparkline {
+            background-color: #333;
+        }
+
+        .dashboard {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .change {
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+
+        .chart-container {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .current-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .sparkline {
+            height: 50px;
+            margin-top: 10px;
+        }
+
+        #priceIntervals ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #priceIntervals li {
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            background-color: #ff9800;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin: 20px;
+        }
+
+        .news-item {
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header animate__animated animate__fadeIn">
+            <h1>Live Bitcoin Dashboard</h1>
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+        </div>
+
+        <div class="cards">
+            <div class="card animate__animated animate__fadeInUp">
+                <div class="card-header">
+                    <h3>Current Bitcoin Price</h3>
+                    <div class="price" id="bitcoinPrice">Loading...</div>
+                </div>
+                <div id="priceChange" class="change">Calculating...</div>
+                <div class="sparkline" id="priceSpark"></div>
+            </div>
+
+            
+            <div class="card animate__animated animate__fadeInUp">
+                <h3>Bitcoin Price (Time-based)</h3>
+                <div id="priceIntervals">
+                    <ul>
+                        <li><strong>1 Minute:</strong> <span id="price1min">Loading...</span></li>
+                        <li><strong>5 Minutes:</strong> <span id="price5min">Loading...</span></li>
+                        <li><strong>15 Minutes:</strong> <span id="price15min">Loading...</span></li>
+                        <li><strong>1 Hour:</strong> <span id="price1hr">Loading...</span></li>
+                        <li><strong>24 Hours:</strong> <span id="price24hr">Loading...</span></li>
+                        <li><strong>7 Days:</strong> <span id="price7d">Loading...</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card animate__animated animate__fadeInUp">
+                <h3>24h High/Low</h3>
+                <div id="priceHigh">24h High: Loading...</div>
+                <div id="priceLow">24h Low: Loading...</div>
+            </div>
+        </div>
+
+        <div class="chart-container animate__animated animate__fadeIn">
+            <div class="chart-header">
+                <h3>Bitcoin Price Chart (Live)</h3>
+                <div class="current-price">24h Volume: <span id="volume">Loading...</span></div>
+            </div>
+            <canvas id="bitcoinChart"></canvas>
+        </div>
+
+        <div class="card animate__animated animate__fadeInUp">
+            <h3>Latest Bitcoin News</h3>
+            <div id="news">Loading news...</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
